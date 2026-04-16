@@ -15,10 +15,12 @@ qrcode - Pillow
 
 How to run locally:
 1. Download the zipped code and extract
-2. Create and activate virtual environment
+2. Create virtual environment
+   macOS: python3 -m venv venv
+4. Activate virtual environment
    macOS = source venv/bin/activate
-3. Install dependencies
+5. Install dependencies
    pip install -r requirements.txt
-4. Run the application
+6. Run the application
    macOS = python3 app.py
 
