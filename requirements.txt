@@ -3,3 +3,5 @@ Flask-SQLAlchemy==3.0.3
 qrcode[pil]==8.2
 Pillow==12.1.0
 gunicorn==21.2.0
+# Flask includes dependencies like Werkzeug, Jinja2 automatically,
+# so they are not listed separately here.
