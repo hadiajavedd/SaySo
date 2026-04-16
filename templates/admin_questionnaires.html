@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Manage Questionnaires</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- layout wrapper that holds the sidebar and the page content side by side -->
+<div class="layout">
+
+  <!-- sidebar on the left side of the page -->
+  <aside class="sidebar">
+
+    <!-- clicking the profile section takes the user to their profile page -->
+    <div class="profile clickable" onclick="location.href='/profile'">
+      <div class="avatar">🛡️</div>
+      <!-- username is filled in by the javascript at bottom of the page -->
+      <div class="username" id="sidebarUsername">Loading...</div>
+    </div>
+
+    <!-- navigation links for the admin section -->
+    <div class="menu-section">
+      <h3>SaySo Admin</h3>
+      <a href="/homepage">User Dashboard</a>
+      <a href="/admin/users">Manage Users</a>
+      <a href="/admin/questionnaires">Manage Questionnaires</a>
+      <a href="/admin/responses">Manage Responses</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/help">Help</a>
+      <a href="/logout" class="logout">Logout</a>
+    </div>
+
+  </aside>
+
+  <!-- main content area on the right side of the page -->
+  <main class="content">
+
+    <!-- page title and description at the top -->
+    <div class="dashboard-header">
+      <h1>Manage Questionnaires</h1>
+      <p>View every questionnaire in the database and remove records when needed.</p>
+    </div>
+
+    <!-- table that lists all questionnaires from the database -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Owner</th>
+            <th>Created</th>
+            <th>Responses</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- loop through every questionnaire passed in from app.py -->
+          {% for q in questionnaires %}
+          <tr>
+            <!-- q.id is the unique id of the questionnaire in the database -->
+            <td>{{ q.id }}</td>
+            <td>{{ q.title }}</td>
+            <!-- q.user.username works because of the relationship between Questionnaire and User in app.py -->
+            <td>{{ q.user.username }}</td>
+            <td><span class="local-datetime" data-utc="{{ q.created_at.isoformat() }}+00:00"></span></td>
+            <!-- q.responses|length counts how many responses this questionnaire has using the relationship in app.py -->
+            <td>{{ q.responses|length }}</td>
+            <td>
+              <!-- the form sends a POST request to the delete route in app.py when submitted -->
+              <!-- the confirm popup asks the admin user to double check before deleting -->
+              <!-- deleting a questionnaire also deletes all its questions and responses because of CASCADE DELETE in app.py -->
+              <form action="/admin/delete-questionnaire/{{ q.id }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this questionnaire and all its responses?');">
+                <button type="submit" class="danger-small">Delete Questionnaire</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // call the api to get the current logged in users info
+  // then update the sidebar to show their username and whether they are an admin
+  fetch("/api/me")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("sidebarUsername").innerText =
+        data.username + (data.is_admin ? " (Admin)" : "");
+    });
+
+  // convert UTC datetime strings into users local time
+  document.querySelectorAll(".local-datetime").forEach(el => {
+    const utcValue = el.dataset.utc;
+    if (!utcValue) return;
+
+    const date = new Date(utcValue);
+    if (isNaN(date.getTime())) return;
+
+    el.textContent = date.toLocaleString("en-GB");
+  });
+</script>
+
+</body>
+</html>

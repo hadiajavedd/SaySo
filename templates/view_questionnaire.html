@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>View Questionnaire</title>
+<link rel="stylesheet" href="/static/style.css">
+<!-- small styles just for how each question is shown -->
+<style>
+.question-block {
+background:#fff;
+border:1px solid #ccc;
+border-radius:12px;
+padding:15px;
+margin-bottom:10px;
+        }
+</style>
+</head>
+<body>
+<div class="layout">
+<!-- sidebar with profile and navigation -->
+<aside class="sidebar">
+<div class="profile clickable" onclick="location.href='/profile'">
+<div class="avatar">👤</div>
+<!-- username filled in by the js at the bottom of the page -->
+<div class="username" id="username">USER</div>
+</div>
+<div class="menu-section">
+<h3>SaySo</h3>
+<a href="/homepage">Dashboard</a>
+<a href="/create-questionnaire">Create Questionnaire</a>
+<!-- admin link hidden by default and only shown if the user is an admin -->
+<a href="/admin" id="adminSidebarLink" style="display:none;">Admin Dashboard</a>
+</div>
+<div class="sidebar-bottom">
+<a href="/help">Help</a>
+<a href="/logout" class="logout">Logout</a>
+</div>
+</aside>
+<!-- content -->
+<main class="content">
+<!-- questionnaire title passed in from app.py -->
+<h1 style="color:#6b1f2b;">{{ questionnaire.title }}</h1>
+<!-- loops through each question and displays its number, text and type -->
+        {% for q in questionnaire.questions %}
+<div class="question-block">
+<strong>Q{{ loop.index }}:</strong> {{ q.text }} <em>({{ q.qtype }})</em>
+</div>
+        {% endfor %}
+</main>
+</div>
+<script>
+// call the api to get the logged in users info and show their username in the sidebar
+// also show the admin link if the user is an admin
+fetch("/api/me")
+.then(res => res.json())
+.then(data => {
+if(!data.error) {
+document.getElementById("username").innerText = data.username;
+if (data.is_admin) {
+document.getElementById("adminSidebarLink").style.display = "block";
+        }
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SaySo - Insights</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        /* wrapper that stacks all the insight sections vertically with spacing */
+        .insights-shell {
+            display: flex;
+            flex-direction: column;
+            gap: 26px;
+        }
+
+        /* top header card showing the page title and description */
+        .insights-topbar {
+            background: white;
+            padding: 26px 30px;
+            border-radius: 16px;
+            border: 2px solid #6b1f2b;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .insights-topbar h1 {
+            margin: 0 0 8px 0;
+            color: #6b1f2b;
+        }
+
+        .insights-topbar p {
+            margin: 0;
+            color: #666;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        /* card containing the dropdown to pick which questionnaire to view insights for */
+        .insights-controls {
+            background: white;
+            border: 2px solid #6b1f2b;
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+            padding: 22px;
+        }
+
+        .insights-controls label {
+            display: block;
+            margin-bottom: 10px;
+            color: #6b1f2b;
+            font-weight: 700;
+        }
+
+        /* grid of small stat cards showing totals like responses and questions */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .insight-stat-card {
+            background: white;
+            border: 2px solid #6b1f2b;
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+            padding: 20px;
+        }
+
+        .insight-stat-card .label {
+            display: block;
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+
+        .insight-stat-card strong {
+            font-size: 28px;
+            color: #6b1f2b;
+        }
+
+        /* two column layout for the bar chart and line chart panels */
+        .panel-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+        }
+
+        /* shared card style used for the chart panels and question breakdown */
+        .insight-panel {
+            background: white;
+            border: 2px solid #6b1f2b;
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+            padding: 24px;
+        }
+
+        .insight-panel h2 {
+            margin: 0 0 8px 0;
+            color: #6b1f2b;
+            font-size: 22px;
+        }
+
+        .insight-panel p {
+            margin: 0 0 18px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* container for the bar chart columns */
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 18px;
+            min-height: 240px;
+            padding: 16px 6px 6px;
+            border-top: 1px solid #eee;
+        }
+
+        /* each individual bar and its label */
+        .bar-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .bar-value {
+            font-size: 12px;
+            color: #6b1f2b;
+            font-weight: 700;
+        }
+
+        /* the coloured bar shape  height is set dynamically by js */
+        .bar-shape {
+            width: 100%;
+            max-width: 72px;
+            border-radius: 14px 14px 6px 6px;
+            background: linear-gradient(180deg, #8b2a3b, #6b1f2b);
+            min-height: 14px;
+            transition: 0.2s ease;
+        }
+
+        .bar-label {
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            word-break: break-word;
+        }
+
+        /* container for the svg line chart */
+        .line-chart {
+            position: relative;
+            height: 260px;
+            border-top: 1px solid #eee;
+            padding-top: 14px;
+        }
+
+        .line-svg {
+            width: 100%;
+            height: 220px;
+            overflow: visible;
+        }
+
+        /* day labels shown below the line chart */
+        .line-labels {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* list of question cards in the question breakdown section */
+        .question-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        /* each individual question card showing the question and its most common answer */
+        .question-item {
+            background: #faf7f8;
+            border: 1px solid rgba(107,31,43,0.12);
+            border-radius: 14px;
+            padding: 16px;
+        }
+
+        .question-item strong {
+            display: block;
+            color: #6b1f2b;
+            margin-bottom: 8px;
+        }
+
+        .question-item span {
+            display: block;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* shown when no questionnaire has been selected yet */
+        .empty-state {
+            background: white;
+            border: 2px dashed rgba(107,31,43,0.35);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            color: #666;
+            font-size: 15px;
+        }
+
+        /* on smaller screens stack the two chart panels on top of each other */
+        @media (max-width: 980px) {
+            .panel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <aside class="sidebar">
+        <div class="profile clickable" onclick="location.href='/profile'">
+            <div class="avatar">👤</div>
+            <div class="username" id="sidebarUsername">Loading...</div>
+        </div>
+
+        <div class="menu-section">
+            <h3>SaySo</h3>
+            <a href="/homepage">Dashboard</a>
+            <a href="/create-questionnaire">Create Questionnaire</a>
+            <a href="/insights">Insights</a>
+            <a href="/admin" id="adminSidebarLink" style="display:none;">Admin Dashboard</a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="/help">Help</a>
+            <a href="/logout" class="logout">Logout</a>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="insights-shell">
+            <!-- note -->
+            <section class="insights-topbar">
+                <h1>Response Insights</h1>
+                <p>View a clean summary of your questionnaire performance, answer popularity and submission activity.</p>
+            </section>
+
+            <!-- dropdown to pick which questionnaire to load insights for -->
+            <section class="insights-controls">
+                <label for="questionnaireSelect">Choose a questionnaire</label>
+                <select id="questionnaireSelect">
+                    <option value="">Select a questionnaire</option>
+                </select>
+            </section>
+
+            <!-- whole section is hidden until the user picks a questionnaire -->
+            <section id="insightsContent" style="display:none;">
+                <!-- summary stat cards at the top -->
+                <div class="insights-grid">
+                    <div class="insight-stat-card">
+                        <span class="label">Total responses</span>
+                        <strong id="totalResponses">0</strong>
+                    </div>
+
+                    <div class="insight-stat-card">
+                        <span class="label">Questions</span>
+                        <strong id="totalQuestions">0</strong>
+                    </div>
+
+                    <div class="insight-stat-card">
+                        <span class="label">Most popular answer</span>
+                        <strong id="topAnswer" style="font-size:20px;">-</strong>
+                    </div>
+
+                    <div class="insight-stat-card">
+                        <span class="label">Most active day</span>
+                        <strong id="topDay" style="font-size:20px;">-</strong>
+                    </div>
+                </div>
+
+                <!-- bar chart and line chart shown side by side -->
+                <div class="panel-grid" style="margin-top:24px;">
+                    <div class="insight-panel">
+                        <h2>Answer Popularity</h2>
+                        <p>The most selected answers across this questionnaire.</p>
+                        <!-- bar chart built here by the renderBarChart function in js -->
+                        <div id="barChart" class="bar-chart"></div>
+                    </div>
+
+                    <div class="insight-panel">
+                        <h2>Response Activity</h2>
+                        <p>Submissions over time for this questionnaire.</p>
+                        <div class="line-chart">
+                            <!-- svg line chart is drawn here by the renderLineChart function in javascript -->
+                            <svg id="lineChart" class="line-svg" viewBox="0 0 520 220" preserveAspectRatio="none"></svg>
+                            <div id="lineLabels" class="line-labels"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- shows the most common answer per question -->
+                <div class="insight-panel" style="margin-top:24px;">
+                    <h2>Question Breakdown</h2>
+                    <p>Quick summary of what each question is receiving most often.</p>
+                    <!-- question cards are built here by the renderQuestionBreakdown function in js -->
+                    <div id="questionBreakdown" class="question-breakdown"></div>
+                </div>
+            </section>
+
+            <!-- shown when no questionnaire has been selected or if there is an error -->
+            <div id="emptyState" class="empty-state">
+                Pick a questionnaire to view its insights.
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+let questionnaires = [];
+
+// call the api to get the logged in users info and show their username in the sidebar
+fetch("/api/me")
+.then(res => res.json())
+.then(data => {
+    if (!data.error) {
+        document.getElementById("sidebarUsername").innerText = data.username;
+
+        if (data.is_admin) {
+            document.getElementById("adminSidebarLink").style.display = "block";
+        }
+    }
+});
+
+// fetch all questionnaires belonging to the user and populate the dropdown with them
+fetch("/api/my-questionnaires")
+.then(res => res.json())
+.then(data => {
+    questionnaires = data;
+    const select = document.getElementById("questionnaireSelect");
+
+    data.forEach(q => {
+        const option = document.createElement("option");
+        option.value = q.id;
+        option.textContent = q.title;
+        select.appendChild(option);
+    });
+});
+
+// when the user picks a questionnaire from the dropdown fetch its insights from the backend
+document.getElementById("questionnaireSelect").addEventListener("change", async function() {
+    const questionnaireId = this.value;
+
+    // if nothing is selected hide the insights and show the empty state message
+    if (!questionnaireId) {
+        document.getElementById("insightsContent").style.display = "none";
+        document.getElementById("emptyState").style.display = "block";
+        document.getElementById("emptyState").innerText = "Pick a questionnaire to view its insights.";
+        return;
+    }
+
+    const res = await fetch(`/api/insights/${questionnaireId}`);
+    const data = await res.json();
+
+    // if the api returns an error show it in the empty state
+    if (data.error) {
+        document.getElementById("insightsContent").style.display = "none";
+        document.getElementById("emptyState").style.display = "block";
+        document.getElementById("emptyState").innerText = data.error;
+        return;
+    }
+
+    // show the insights section and hide the empty state
+    document.getElementById("insightsContent").style.display = "block";
+    document.getElementById("emptyState").style.display = "none";
+
+    // fill in the four summary stat cards with data from the api
+    document.getElementById("totalResponses").innerText = data.total_responses;
+    document.getElementById("totalQuestions").innerText = data.total_questions;
+    document.getElementById("topAnswer").innerText = data.top_answer || "-";
+    document.getElementById("topDay").innerText = data.top_day || "-";
+
+    // call the three render functions to draw the charts and question breakdown
+    renderBarChart(data.popular_answers || []);
+    renderLineChart(data.activity || []);
+    renderQuestionBreakdown(data.question_breakdown || []);
+});
+
+// builds the bar chart using the most popular answers returned from the api
+function renderBarChart(items) {
+    const chart = document.getElementById("barChart");
+    chart.innerHTML = "";
+
+    if (!items.length) {
+        chart.innerHTML = "<p style='color:#777;'>No response data yet.</p>";
+        return;
+    }
+
+    // find the highest count so we can scale all bars relative to it
+    const max = Math.max(...items.map(item => item.count), 1);
+
+    items.forEach(item => {
+        const col = document.createElement("div");
+        col.className = "bar-column";
+
+        // calculate the height of each bar as a proportion of the tallest bar
+        const height = Math.max((item.count / max) * 160, 14);
+
+        col.innerHTML = `
+            <div class="bar-value">${item.count}</div>
+            <div class="bar-shape" style="height:${height}px;"></div>
+            <div class="bar-label">${item.label}</div>
+        `;
+
+        chart.appendChild(col);
+    });
+}
+
+// draws the line chart using svg showing submission activity over time
+function renderLineChart(activity) {
+    const svg = document.getElementById("lineChart");
+    const labels = document.getElementById("lineLabels");
+    svg.innerHTML = "";
+    labels.innerHTML = "";
+
+    if (!activity.length) {
+        svg.innerHTML = `<text x="20" y="60" fill="#777" font-size="14">No activity yet.</text>`;
+        return;
+    }
+
+    const width = 520;
+    const height = 220;
+    const padding = 24;
+
+    const maxCount = Math.max(...activity.map(item => item.count), 1);
+
+    // calculates the x and y position of each point on the line chart
+    const points = activity.map((item, index) => {
+        const x = padding + (index * ((width - padding * 2) / Math.max(activity.length - 1, 1)));
+        const y = height - padding - ((item.count / maxCount) * (height - padding * 2));
+        return { x, y, label: item.day, count: item.count };
+    });
+
+    const polylinePoints = points.map(p => `${p.x},${p.y}`).join(" ");
+
+    // draws the line connecting all the points
+    svg.innerHTML += `
+        <polyline
+            fill="none"
+            stroke="#6b1f2b"
+            stroke-width="4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            points="${polylinePoints}">
+        </polyline>
+    `;
+
+    // draws a dot at each data point on the line
+    points.forEach(p => {
+        svg.innerHTML += `<circle cx="${p.x}" cy="${p.y}" r="5" fill="#6b1f2b"></circle>`;
+    });
+
+    // adds the day labels below the chart
+    activity.forEach(item => {
+        const div = document.createElement("div");
+        div.textContent = item.day;
+        labels.appendChild(div);
+    });
+}
+
+// builds the question breakdown section showing the most common answer for each question
+function renderQuestionBreakdown(items) {
+    const container = document.getElementById("questionBreakdown");
+    container.innerHTML = "";
+
+    if (!items.length) {
+        container.innerHTML = "<p style='color:#777;'>No response data yet.</p>";
+        return;
+    }
+
+    items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "question-item";
+        card.innerHTML = `
+            <strong>${item.question}</strong>
+            <span>Most common answer: ${item.most_common_answer || "No data yet"}</span>
+            <span>Total answers recorded: ${item.total_answers}</span>
+        `;
+        container.appendChild(card);
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Questionnaire</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- styles for the question boxes and buttons on this page -->
+    <style>
+        .question-block {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        .question-block input,
+        .question-block select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .add-btn, .remove-btn {
+            background: #6b1f2b;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .remove-btn {
+            background: #ff4d4d;
+        }
+
+        .add-btn:hover { background: #8b2a3b; }
+        .remove-btn:hover { background: #ff6666; }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+
+    <!-- sidebar navigation -->
+    <aside class="sidebar">
+        <div class="profile clickable" onclick="location.href='/profile'">
+            <div class="avatar">👤</div>
+            <div class="username" id="username">USER</div>
+        </div>
+
+        <div class="menu-section">
+            <h3>SaySo</h3>
+            <a href="/homepage">Dashboard</a>
+            <a href="/create-questionnaire">Create Questionnaire</a>
+            <!-- admin link is hidden by default and only shown if the user is an admin -->
+            <a href="/admin" id="adminSidebarLink" style="display:none;">Admin Dashboard</a>
+        </div>
+
+        <div class="sidebar-bottom">
+            <a href="/help">Help</a>
+            <a href="/logout" class="logout">Logout</a>
+        </div>
+    </aside>
+
+    <!-- main page content -->
+    <main class="content">
+        <h1 style="text-align:center; color:#6b1f2b;">Create Questionnaire</h1>
+
+        <div class="container" style="max-width:600px;">
+            <form id="createForm">
+                <label>Questionnaire Title</label>
+                <input type="text" id="title" placeholder="Enter title" required>
+
+                <!-- question blocks get added inside this div dynamically by javascript -->
+                <div id="questionsContainer"></div>
+
+                <button type="button" class="add-btn" id="addQuestion">+ Add Question</button>
+                <button type="submit" class="add-btn" style="width:100%; margin-top:20px;">Create Questionnaire</button>
+            </form>
+        </div>
+    </main>
+
+</div>
+
+<script>
+// call the api to get the logged in users info and show their username in the sidebar
+// also show the admin link in the sidebar if the user is an admin
+fetch("/api/me")
+.then(res => res.json())
+.then(data => {
+    if(!data.error) {
+        document.getElementById("username").innerText = data.username;
+
+        if (data.is_admin) {
+            document.getElementById("adminSidebarLink").style.display = "block";
+        }
+    }
+});
+
+// keeps track of how many question blocks have been added so each one gets a unique id
+let questionCount = 0;
+
+// creates a new question block and adds it to the page
+// text and type are optional so existing values can be loaded in when editing
+function addQuestionBlock(text='', type='text') {
+    questionCount++;
+    const container = document.getElementById('questionsContainer');
+
+    const div = document.createElement('div');
+    div.className = 'question-block';
+    div.id = `question-${questionCount}`;
+
+    // each question block has a text input for the question, a dropdown for the answer type, and a remove button
+    div.innerHTML = `
+        <label>Question ${questionCount}</label>
+        <input type="text" placeholder="Enter question text" value="${text}" required>
+        <select>
+            <option value="text" ${type==='text'?'selected':''}>Written Response</option>
+            <option value="yesno" ${type==='yesno'?'selected':''}>Yes/No</option>
+            <option value="scale" ${type==='scale'?'selected':''}>Scale 1-5</option>
+        </select>
+        <button type="button" class="remove-btn" onclick="removeQuestion(${questionCount})">Remove</button>
+    `;
+
+    container.appendChild(div);
+}
+
+// finds the question block with the matching id and removes it from the page
+function removeQuestion(id) {
+    const block = document.getElementById(`question-${id}`);
+    if(block) block.remove();
+}
+
+// clicking the add question button calls addQuestionBlock to create a new empty question
+document.getElementById('addQuestion').addEventListener('click', ()=> addQuestionBlock());
+
+// handles the form submission when the user clicks create questionnaire
+document.getElementById('createForm').addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const title = document.getElementById('title').value;
+    const questionBlocks = document.querySelectorAll('.question-block');
+
+    // loop through all the question blocks and collect the text and type from each one
+    const questions = [];
+    questionBlocks.forEach(block => {
+        const text = block.querySelector('input').value;
+        const qtype = block.querySelector('select').value;
+        questions.push({text, qtype});
+    });
+
+    // send the title and questions to the backend api to save in the database
+    const res = await fetch("/api/questionnaires", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ title, questions })
+    });
+
+    // if the api returns an id the questionnaire was saved successfully so go to the homepage
+    const data = await res.json();
+    if(data.id){
+        window.location.href = "/homepage";
+    } else {
+        alert("Error creating questionnaire");
+    }
+});
+
+// add one empty question block when the page first loads so the form is not empty
+addQuestionBlock();
+
+</script>
+</body>
+</html>

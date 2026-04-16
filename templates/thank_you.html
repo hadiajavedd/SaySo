@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Thank You</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="public-container">
+
+<h1 class="public-title">Thank you!</h1>
+<!-- shows the title of the questionnaire that was just submitted, passed in from app.py -->
+<p class="public-text">
+        Your response has been submitted for <strong>{{ questionnaire.title }}</strong>.
+</p>
+<!-- button to go back to the main login page -->
+<a href="/" class="link-reset">
+<button class="primary-btn" type="button">Return</button>
+</a>
+</div>
+</body>
+</html>

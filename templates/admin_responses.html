@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Manage Responses</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+<style>
+/* styling for the hidden pill badge in the response content column */
+.privacy-pill {
+display: inline-block;
+padding: 10px 14px;
+border-radius: 10px;
+font-weight: 600;
+background: #f3f4f6;
+color: #6b1f2b;
+border: 1px solid rgba(107,31,43,0.18);
+        }
+/* styling for the cell that has the privacy pill */
+.privacy-note {
+max-width: 320px;
+white-space: normal;
+color: #666;
+font-size: 13px;
+line-height: 1.5;
+        }
+/* styling for the note at the bottom of the page */
+.page-note {
+margin-top: 20px;
+padding: 14px 16px;
+background: #faf7f8;
+border: 1px solid rgba(107,31,43,0.12);
+border-radius: 12px;
+color: #555;
+font-size: 14px;
+line-height: 1.5;
+        }
+</style>
+</head>
+<body>
+
+<!-- layout wrapper that holds the sidebar and the page content side by side -->
+<div class="layout">
+
+  <!-- left side -->
+  <aside class="sidebar">
+
+    <div class="profile clickable" onclick="location.href='/profile'">
+      <div class="avatar">🛡️</div>
+      <!-- username is filled by the javascript at the bottom of the page -->
+      <div class="username" id="sidebarUsername">Loading...</div>
+    </div>
+
+    <!-- navigation links for the admin section -->
+    <div class="menu-section">
+      <h3>SaySo Admin</h3>
+      <a href="/homepage">Dashboard</a>
+      <a href="/admin/users">Manage Users</a>
+      <a href="/admin/questionnaires">Manage Questionnaires</a>
+      <a href="/admin/responses">Manage Responses</a>
+    </div>
+
+    <div class="sidebar-bottom">
+      <a href="/help">Help</a>
+      <a href="/logout" class="logout">Logout</a>
+    </div>
+
+  </aside>
+
+  <!-- right side of the page -->
+  <main class="content">
+
+    <div class="dashboard-header">
+      <h1>Manage Responses</h1>
+      <p>Review response records stored in the database and remove them when necessary.</p>
+    </div>
+
+    <!-- table lists all responses from the database -->
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Questionnaire</th>
+            <th>Owner</th>
+            <th>Submitted</th>
+            <th>Response Content</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <!-- loop through every response passed in from app.py -->
+          {% for r in responses %}
+          <tr>
+            <!-- r.id is the unique id of this response in the database -->
+            <td>{{ r.id }}</td>
+            <!-- r.questionnaire.title works because of the relationship between Response and Questionnaire in app.py -->
+            <td>{{ r.questionnaire.title }}</td>
+            <!-- going further through the relationship to get the questionnaire owners username -->
+            <td>{{ r.questionnaire.user.username }}</td>
+            <td><span class="local-datetime" data-utc="{{ r.submitted_at.isoformat() }}+00:00"></span></td>
+            <!-- the actual answer content is hidden from the admin for privacy -->
+            <td class="privacy-note">
+              <span class="privacy-pill">Hidden</span>
+            </td>
+            <td>
+              <!-- this form sends a POST request to the delete route in app.py when submitted -->
+              <form action="/admin/delete-response/{{ r.id }}" method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this response?');">
+                <button type="submit" class="danger-small">Delete Response</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+
+        </tbody>
+      </table>
+    </div>
+
+    <div class="page-note">
+      This page is designed to support moderation and record management without exposing the full text of anonymous submissions.
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // call the api to get the current logged in users info
+  // then update the sidebar to show their username and whether they are an admin
+  fetch("/api/me")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("sidebarUsername").innerText =
+        data.username + (data.is_admin ? " (Admin)" : "");
+    });
+
+  // convert UTC datetime strings into the user's local time
+  document.querySelectorAll(".local-datetime").forEach(el => {
+    const utcValue = el.dataset.utc;
+    if (!utcValue) return;
+
+    const date = new Date(utcValue);
+    if (isNaN(date.getTime())) return;
+
+    el.textContent = date.toLocaleString("en-GB");
+  });
+</script>
+
+</body>
+</html>

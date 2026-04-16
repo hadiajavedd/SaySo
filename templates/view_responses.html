@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Responses - {{ questionnaire.title }}</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="layout">
+<!-- sidebar with profile + links -->
+<aside class="sidebar">
+<div class="profile clickable" onclick="location.href='/profile'">
+<div class="avatar">👤</div>
+<div class="username" id="username">USER</div>
+</div>
+<div class="menu-section">
+<h3>SaySo</h3>
+<a href="/homepage">Dashboard</a>
+<a href="/create-questionnaire">Create Questionnaire</a>
+<!-- admin link hidden by default only shown if the user is an admin -->
+<a href="/admin" id="adminSidebarLink" style="display:none;">Admin Dashboard</a>
+</div>
+<div class="sidebar-bottom">
+<a href="/help">Help</a>
+<a href="/logout" class="logout">Logout</a>
+</div>
+</aside>
+<!-- main page with responses table -->
+<main class="content">
+<div class="responses-container">
+<div class="responses-top-row">
+<!-- questionnaire title passed in from app.py -->
+<h1 class="responses-title">Responses: {{ questionnaire.title }}</h1>
+<button class="responses-back-btn" onclick="location.href='/homepage'">Back</button>
+</div>
+<!-- only show the table if there is at least one response -->
+            {% if responses and responses|length > 0 %}
+<table class="responses-table">
+<tr>
+<th>#</th>
+<th>Submitted</th>
+<!-- loop through questions to create one header column per question -->
+                        {% for q in questions %}
+<th>Q{{ loop.index }}: {{ q.text }}</th>
+                        {% endfor %}
+</tr>
+<!-- each row in this loop is one persons submitted response -->
+                    {% for r in responses %}
+<tr>
+<td>{{ loop.index }}</td>
+<!-- format the submission timestamp to a readable date and time -->
+<td><span class="local-datetime" data-utc="{{ r.submitted_at.isoformat() }}+00:00"></span></td>
+<!-- loop through the answers for this response, one cell per answer -->
+                            {% for ans in r.answers %}
+<td>{{ ans }}</td>
+                            {% endfor %}
+</tr>
+                    {% endfor %}
+</table>
+            {% else %}
+<!-- shown if no one has submitted a response yet -->
+<p class="responses-muted">No responses yet.</p>
+            {% endif %}
+</div>
+</main>
+</div>
+<script>
+// call the api to get the logged in users info and show their username in the sidebar
+// also show the admin link if the user is an admin
+fetch("/api/me")
+.then(res => res.json())
+.then(data => {
+if(!data.error) {
+document.getElementById("username").innerText = data.username;
+if (data.is_admin) {
+document.getElementById("adminSidebarLink").style.display = "block";
+        }
+    }
+});
+
+// convert UTC datetime strings into the user's local time
+ document.querySelectorAll(".local-datetime").forEach(el => {
+const utcValue = el.dataset.utc;
+if (!utcValue) return;
+
+const date = new Date(utcValue);
+if (isNaN(date.getTime())) return;
+
+el.textContent = date.toLocaleString("en-GB");
+});
+</script>
+</body>
+</html>

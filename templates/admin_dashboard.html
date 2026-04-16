@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<!-- main layout wrapper holds the sidebar and the page content side by side -->
+<div class="layout">
+
+  <!-- sidebar on left side of the page -->
+  <aside class="sidebar">
+
+    <!-- clicking the profile section takes the user to their profile page -->
+    <div class="profile clickable" onclick="location.href='/profile'">
+      <div class="avatar">🛡️</div>
+      <!-- username is filled in by the javascript on the page -->
+      <div class="username" id="sidebarUsername">Loading...</div>
+    </div>
+
+    <!-- navigation links for the admin section -->
+    <div class="menu-section">
+      <h3>SaySo Admin</h3>
+      <a href="/homepage">User Dashboard</a>
+      <a href="/create-questionnaire">Create Questionnaire</a>
+      <a href="/admin/users">Manage Users</a>
+      <a href="/admin/questionnaires">Manage Questionnaires</a>
+      <a href="/admin/responses">Manage Responses</a>
+    </div>
+
+    <!-- help and logout links placed at the bottom of the sidebar -->
+    <div class="sidebar-bottom">
+      <a href="/help">Help</a>
+      <a href="/logout" class="logout">Logout</a>
+    </div>
+
+  </aside>
+
+  <!-- main content area on the right side of the page -->
+  <main class="content">
+
+    <!-- page title and description at the top -->
+    <div class="dashboard-header">
+      <h1>Admin Dashboard</h1>
+      <p>View platform-wide data and manage records across the whole system.</p>
+    </div>
+
+    <!-- summary stats section showing counts passed in from app.py -->
+    <section class="questionnaire-list" style="margin-bottom: 30px;">
+
+      <!-- total_users comes from User.query.count() in app.py -->
+      <div class="questionnaire-row">
+        <strong>Total Users</strong>
+        <p>{{ total_users }}</p>
+      </div>
+
+      <!-- total_questionnaires comes from Questionnaire.query.count() in app.py -->
+      <div class="questionnaire-row">
+        <strong>Total Questionnaires</strong>
+        <p>{{ total_questionnaires }}</p>
+      </div>
+
+      <!-- total_responses comes from Response.query.count() in app.py -->
+      <div class="questionnaire-row">
+        <strong>Total Responses</strong>
+        <p>{{ total_responses }}</p>
+      </div>
+
+    </section>
+
+    <!-- loop through the 5 most recently created users from the database -->
+    <section class="dashboard-section">
+      <h2>Recent Users</h2>
+      <div class="questionnaire-list">
+        {% for user in recent_users %}
+        <div class="questionnaire-row">
+          <strong>{{ user.username }}</strong>
+          <p>User ID: {{ user.id }}</p>
+          <!-- check if the user is an admin and show their role accordingly -->
+          <p>Role: {% if user.is_admin %}Admin{% else %}Business User{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- loop through the 5 most recently created questionnaires from the database -->
+    <section class="dashboard-section">
+      <h2>Recent Questionnaires</h2>
+      <div class="questionnaire-list">
+        {% for q in recent_questionnaires %}
+        <div class="questionnaire-row">
+          <strong>{{ q.title }}</strong>
+          <!-- q.user.username works because of the relationship set up between Questionnaire and User in app.py -->
+          <p>Owner: {{ q.user.username }}</p>
+          <p>Created: <span class="local-datetime" data-utc="{{ q.created_at.isoformat() }}+00:00"></span></p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- loop through the 5 most recently submitted responses from the database -->
+    <section class="dashboard-section">
+      <h2>Recent Responses</h2>
+      <div class="questionnaire-list">
+        {% for r in recent_responses %}
+        <div class="questionnaire-row">
+          <strong>Response #{{ r.id }}</strong>
+          <!-- r.questionnaire.title works because of the relationship between Response and Questionnaire in app.py -->
+          <p>Questionnaire: {{ r.questionnaire.title }}</p>
+          <!-- going further through relationship to get the questionnaire owners username -->
+          <p>Owner: {{ r.questionnaire.user.username }}</p>
+          <p>Submitted: <span class="local-datetime" data-utc="{{ r.submitted_at.isoformat() }}+00:00"></span></p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // call the api to get the current logged in users info
+  //  update the sidebar to show their username and whether they are an admin
+  fetch("/api/me")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("sidebarUsername").innerText =
+        data.username + (data.is_admin ? " (Admin)" : "");
+    });
+
+  // convert UTC datetime strings into the user's local time
+  document.querySelectorAll(".local-datetime").forEach(el => {
+    const utcValue = el.dataset.utc;
+    if (!utcValue) return;
+
+    const date = new Date(utcValue);
+    if (isNaN(date.getTime())) return;
+
+    el.textContent = date.toLocaleString("en-GB");
+  });
+</script>
+
+</body>
+</html>

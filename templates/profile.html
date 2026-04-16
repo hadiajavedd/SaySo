@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Profile</title>
+<link rel="stylesheet" href="/static/style.css">
+<style>
+/* utility class used to hide the password form until the user clicks change password */
+.hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="layout">
+<!-- sidebar for navigation and showing the username -->
+<aside class="sidebar">
+<div class="profile clickable" onclick="location.href='/profile'">
+<div class="avatar">👤</div>
+<div class="username" id="sidebarUsername">Loading...</div>
+</div>
+<div class="menu-section">
+<h3>SaySo</h3>
+<a href="/homepage">Dashboard</a>
+<a href="/create-questionnaire">Create Questionnaire</a>
+<!-- admin link is hidden by default and only shown if the user is an admin -->
+<a href="/admin" id="adminSidebarLink" style="display:none;">Admin Dashboard</a>
+</div>
+<div class="sidebar-bottom">
+<a href="/help">Help</a>
+<a href="/logout" class="logout">Logout</a>
+</div>
+</aside>
+<!-- main profile info and settings -->
+<main class="content">
+<div class="page-shell">
+<section class="dashboard-header profile-header">
+<h1>Your Profile</h1>
+<p>Manage your account details, security settings, and access helpful account actions in one place.</p>
+</section>
+<section class="profile-layout">
+<!-- left card showing account info, username editor and password change -->
+<div class="profile-card profile-main-card">
+<div class="profile-card-header">
+<div>
+<h2>Account Information</h2>
+<p>Keep your details up to date and review your activity.</p>
+</div>
+<!-- badge shows SaySo Account by default but changes to SaySo Admin if the user is an admin -->
+<div class="profile-badge" id="accountBadge">SaySo Account</div>
+</div>
+<!-- stat card showing how many questionnaires the user has created -->
+<div class="profile-stat-grid">
+<div class="profile-stat-card">
+<span class="stat-label">Questionnaires created</span>
+<strong id="questionnaireCount">0</strong>
+</div>
+</div>
+<!-- input and button for changing the username -->
+<div class="profile-form-group">
+<label for="usernameInput">Username</label>
+<input type="text" id="usernameInput" placeholder="Enter your username">
+<button class="primary-btn" onclick="saveUsername()">Save Username</button>
+</div>
+<div class="profile-divider"></div>
+<!-- row with a button that shows the password change form when clicked -->
+<div class="profile-section-row">
+<div class="profile-section-copy">
+<h3>Password & Security</h3>
+<p>Update your password to keep your account secure.</p>
+</div>
+<button class="secondary-btn" onclick="togglePasswordForm()">
+                            Change Password
+</button>
+</div>
+<!-- password change form hidden by default shown when toggle button is clicked -->
+<div id="passwordForm" class="hidden password-form-wrap">
+<div class="profile-form-group">
+<label for="currentPassword">Current Password</label>
+<input type="password" id="currentPassword" placeholder="Current Password" required>
+</div>
+<div class="profile-form-group">
+<label for="newPassword">New Password</label>
+<input type="password" id="newPassword" placeholder="New Password" required>
+</div>
+<div class="profile-form-group">
+<label for="confirmPassword">Confirm New Password</label>
+<input type="password" id="confirmPassword" placeholder="Confirm New Password" required>
+</div>
+<button class="secondary-btn" onclick="changePassword()">Save Password</button>
+</div>
+</div>
+<!-- right card with quick action buttons -->
+<div class="profile-card profile-side-card">
+<div class="profile-card-header small-gap">
+<div>
+<h2>Quick Actions</h2>
+<p>Useful shortcuts for your account.</p>
+</div>
+</div>
+<div class="profile-actions-stack">
+<button class="secondary-btn full-width" onclick="location.href='/help'">Get Help</button>
+<!-- admin dashboard button hidden by default and only shown if the user is an admin -->
+<button class="secondary-btn full-width" id="adminProfileButton" onclick="location.href='/admin'" style="display:none;">Open Admin Dashboard</button>
+<button class="logout-btn full-width" onclick="location.href='/logout'">Logout</button>
+<!-- deletes the account and asks for confirmation first -->
+<form action="/delete-account" method="POST"
+onsubmit="return confirm('This will permanently delete your account and all data. Are you sure?');">
+<button type="submit" class="danger-btn full-width">Delete Account</button>
+</form>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<script>
+// gets current user info and fills sidebar and username input
+// also shows admin links if the user is an admin
+fetch("/api/me")
+  .then(res => res.json())
+  .then(data => {
+document.getElementById("sidebarUsername").innerText = data.username;
+document.getElementById("usernameInput").value = data.username;
+if (data.is_admin) {
+document.getElementById("adminSidebarLink").style.display = "block";
+document.getElementById("adminProfileButton").style.display = "block";
+document.getElementById("accountBadge").innerText = "SaySo Admin";
+      }
+  });
+// fetch the users questionnaires and show the count in the stat card
+fetch("/api/my-questionnaires")
+  .then(res => res.json())
+  .then(data => {
+document.getElementById("questionnaireCount").innerText = data.length;
+  });
+// sends the new username to the backend api and updates the sidebar if successful
+function saveUsername() {
+const newUsername = document.getElementById("usernameInput").value.trim();
+if (!newUsername) {
+alert("Please enter a username");
+return;
+    }
+fetch("/api/update-username", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({ username: newUsername })
+    })
+    .then(res => res.json())
+    .then(data => {
+if (data.success) {
+document.getElementById("sidebarUsername").innerText = newUsername;
+alert("Username changed successfully");
+        } else {
+alert(data.error || "Could not update username");
+        }
+    })
+    .catch(() => {
+alert("Something went wrong while updating username");
+    });
+}
+// shows or hides the password form by toggling the hidden class on and off
+function togglePasswordForm() {
+document.getElementById("passwordForm").classList.toggle("hidden");
+}
+// checks the new passwords match then sends the change request to the backend api
+function changePassword() {
+const current = document.getElementById("currentPassword").value;
+const newPass = document.getElementById("newPassword").value;
+const confirm = document.getElementById("confirmPassword").value;
+if (!current || !newPass || !confirm) {
+alert("Please fill in all password fields");
+return;
+    }
+if (newPass !== confirm) {
+alert("New passwords do not match");
+return;
+    }
+fetch("/api/change-password", {
+method: "POST",
+headers: { "Content-Type": "application/json" },
+body: JSON.stringify({
+current_password: current,
+new_password: newPass
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+if (data.success) {
+// if successful hide the form and clear all three password fields
+document.getElementById("passwordForm").classList.add("hidden");
+document.getElementById("currentPassword").value = "";
+document.getElementById("newPassword").value = "";
+document.getElementById("confirmPassword").value = "";
+alert("Password changed successfully");
+        } else {
+alert(data.error || "Could not change password");
+        }
+    })
+    .catch(() => {
+alert("Something went wrong while changing password");
+    });
+}
+</script>
+</body>
+</html>

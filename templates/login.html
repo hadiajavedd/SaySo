@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SaySo - Login</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+<style>
+/* shared styles for error and success message boxes */
+.message-box {
+padding: 12px 16px;
+border-radius: 10px;
+font-size: 14px;
+font-weight: 600;
+margin-bottom: 16px;
+text-align: center;
+        }
+/* red styling for error messages */
+.message-error {
+background: #fff1f3;
+color: #a61b37;
+border: 1px solid rgba(166,27,55,0.2);
+        }
+/* green styling for success messages */
+.message-success {
+background: #f0faf4;
+color: #1a7a40;
+border: 1px solid rgba(26,122,64,0.2);
+        }
+/* line separates the sign up link from the forgot password link */
+.auth-divider {
+border: none;
+border-top: 1px solid #eee;
+margin: 18px 0;
+        }
+/* styling for the forgot password link */
+.forgot-link {
+text-align: center;
+margin-top: 4px;
+        }
+.forgot-link a {
+color: #6b1f2b;
+font-size: 13px;
+font-weight: 600;
+text-decoration: none;
+        }
+.forgot-link a:hover {
+text-decoration: underline;
+        }
+</style>
+</head>
+<body>
+<!-- centered card layout used for all auth pages -->
+<div class="auth-page">
+<div class="auth-card">
+<h1>SaySo Login</h1>
+        <!-- error message shown if the username or password is wrong -->
+        {% if error %}
+<div class="message-box message-error">{{ error }}</div>
+        {% endif %}
+        <!-- success message shown after signing up or resetting a password -->
+        {% if success %}
+<div class="message-box message-success">{{ success }}</div>
+        {% endif %}
+        <!-- login form handled by js below so the page does not do a full reload -->
+<form id="loginForm">
+<label>Username</label>
+<input type="text" id="username" required>
+<label>Password</label>
+<input type="password" id="password" required>
+<button type="submit">Login</button>
+</form>
+<p class="auth-link">
+            Don't have an account? <a href="/signup">Sign Up</a>
+</p>
+<hr class="auth-divider">
+<p class="forgot-link">
+<a href="/forgot-password">Forgot your password?</a>
+</p>
+</div>
+</div>
+<script>
+// listen for the form being submitted
+document.getElementById("loginForm").addEventListener("submit", async e => {
+e.preventDefault();
+const username = document.getElementById("username").value;
+const password = document.getElementById("password").value;
+// send the username and password to the login route in app.py as a POST request
+const res = await fetch("/", {
+method: "POST",
+headers: {"Content-Type": "application/x-www-form-urlencoded"},
+body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+    });
+// if app.py redirects to the homepage that means login was successful so follow the redirect
+if (res.redirected) {
+window.location.href = res.url;
+    } else {
+// if login failed app.py sends back the login page with an error message so rerender it
+const text = await res.text();
+document.open();
+document.write(text);
+document.close();
+    }
+});
+</script>
+</body>
+</html>

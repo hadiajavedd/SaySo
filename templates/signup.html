@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SaySo - Sign Up</title>
+<!-- link to the stylesheet for styling across all pages -->
+<link rel="stylesheet" href="/static/style.css">
+<style>
+/* shared styles for the error message box */
+.message-box {
+padding: 12px 16px;
+border-radius: 10px;
+font-size: 14px;
+font-weight: 600;
+margin-bottom: 16px;
+text-align: center;
+        }
+/* red styling for error messagesn */
+.message-error {
+background: #fff1f3;
+color: #a61b37;
+border: 1px solid rgba(166,27,55,0.2);
+        }
+/* styling for the field labels above each input */
+.auth-label {
+font-size: 13px;
+font-weight: 600;
+color: #444;
+margin-bottom: 4px;
+display: block;
+        }
+</style>
+</head>
+<body>
+<!-- centered card layout used for all auth pages -->
+<div class="auth-page">
+<div class="auth-card">
+<h1>SaySo Sign Up</h1>
+        <!-- error if the username or email is already taken -->
+        {% if error %}
+<div class="message-box message-error">{{ error }}</div>
+        {% endif %}
+        <!-- form submits to the signup route in app.py via POST  -->
+        <!-- app.py checks for duplicate usernames and emails then saves the new user to the database -->
+<form method="POST" action="/signup">
+<label class="auth-label">Username</label>
+<input type="text" name="username" required>
+<label class="auth-label">Email address</label>
+<input type="email" name="email" placeholder="you@example.com" required>
+<label class="auth-label">Password</label>
+<input type="password" name="password" required>
+<button type="submit">Create Account</button>
+</form>
+<!-- link back to the login page for users who already have an account -->
+<p class="auth-link">
+            Already have an account? <a href="/">Log in</a>
+</p>
+</div>
+</div>
+</body>
+</html>

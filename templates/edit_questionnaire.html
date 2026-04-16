@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Questionnaire</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <!-- specific styles for the question blocks and buttons -->
+    <style>
+        .question-block {
+            background:#fff;
+            border:1px solid #ccc;
+            border-radius:12px;
+            padding:15px;
+            margin-bottom:10px;
+        }
+        .add-btn, .remove-btn {
+            background:#6b1f2b;
+            color:#fff;
+            padding:8px 15px;
+            border:none;
+            border-radius:8px;
+            margin-top:10px;
+            cursor:pointer;
+        }
+        .remove-btn { background:#ff4d4d; }
+        .add-btn:hover { background:#8b2a3b; }
+        .remove-btn:hover { background:#ff6666; }
+    </style>
+</head>
+<body>
+
+<div class="layout">
+    <!-- sidebar nav -->
+    <aside class="sidebar">
+        <div class="profile clickable" onclick="location.href='/profile'">
+            <div class="avatar">👤</div>
+            <div class="username" id="username">USER</div>
+        </div>
+        <div class="menu-section">
+            <h3>SaySo</h3>
+            <a href="/homepage">Dashboard</a>
+            <a href="/create-questionnaire">Create Questionnaire</a>
+            <!-- admin link is hidden by default only shown if the user is an admin -->
+            <a href="/admin" id="adminSidebarLink" style="display:none;">Admin Dashboard</a>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="/help">Help</a>
+            <a href="/logout" class="logout">Logout</a>
+        </div>
+    </aside>
+
+    <!-- main edit form -->
+    <main class="content">
+        <h1 style="color:#6b1f2b;">Edit Questionnaire</h1>
+
+        <div class="container" style="max-width:600px;">
+            <form id="editForm">
+                <label>Questionnaire Title</label>
+                <input type="text" id="title" required>
+
+                <!-- existing questions get loaded into this div by js -->
+                <div id="questionsContainer"></div>
+
+                <button type="button" class="add-btn" id="addQuestion">+ Add Question</button>
+                <button type="submit" class="add-btn" style="width:100%; margin-top:20px;">
+                    Save Changes
+                </button>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+/* call the api to get the logged in users info and show their username in the sidebar show the admin link if the user is an admin */
+fetch("/api/me")
+.then(res => res.json())
+.then(data => {
+    if(!data.error) {
+        document.getElementById("username").innerText = data.username;
+
+        if (data.is_admin) {
+            document.getElementById("adminSidebarLink").style.display = "block";
+        }
+    }
+});
+
+/* keeps track of how many question blocks have been added so each one gets a unique id */
+let questionCount = 0;
+
+/* get the questionnaire id from the end of the url so we know which one to load and save */
+const questionnaireId = window.location.pathname.split("/").pop();
+
+function addQuestionBlock(text='', type='text') {
+    questionCount++;
+
+    const div = document.createElement('div');
+    div.className = 'question-block';
+    div.id = `question-${questionCount}`;
+
+    div.innerHTML = `
+        <label>Question ${questionCount}</label>
+        <input type="text" value="${text}" required>
+        <select>
+            <option value="text" ${type==='text'?'selected':''}>Written Response</option>
+            <option value="yesno" ${type==='yesno'?'selected':''}>Yes/No</option>
+            <option value="scale" ${type==='scale'?'selected':''}>Scale 1-5</option>
+        </select>
+        <button type="button" class="remove-btn" onclick="this.parentElement.remove()">Remove</button>
+    `;
+
+    document.getElementById('questionsContainer').appendChild(div);
+}
+
+/* fetch the existing questionnaire data from the backend and fill the form with it */
+fetch(`/api/questionnaire/${questionnaireId}`)
+.then(res => res.json())
+.then(data => {
+    document.getElementById('title').value = data.title;
+    /* loop through each saved question and add a filled in block for it */
+    data.questions.forEach(q => addQuestionBlock(q.text, q.qtype));
+});
+
+document.getElementById('addQuestion')
+.addEventListener('click', () => addQuestionBlock());
+
+/* handles saving when the user clicks save changes */
+document.getElementById('editForm')
+.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const title = document.getElementById('title').value;
+    const questions = [];
+
+    /* loop through all question blocks on the page and collect the updated text and type */
+    document.querySelectorAll('.question-block').forEach(block => {
+        questions.push({
+            text: block.querySelector('input').value,
+            qtype: block.querySelector('select').value
+        });
+    });
+
+    /* send the updated title and questions to the backend api using PUT request PUT (update) record not creating a new one */
+    const res = await fetch(`/api/questionnaire/${questionnaireId}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ title, questions })
+    });
+
+    /* if the api says success go back to the homepage otherwise show an error */
+    const data = await res.json();
+    if(data.success){
+        window.location.href = "/homepage";
+    } else {
+        alert("Error updating questionnaire");
+    }
+});
+</script>
+
+</body>
+</html>

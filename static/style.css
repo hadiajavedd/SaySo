@@ -1,0 +1,817 @@
+/* used on every page */
+
+/* removes default browser spacing and sets the font */
+* {
+    box-sizing: border-box;
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+/* sets the grey background and text colour */
+body {
+    margin: 0;
+    background: #f1f3f4;
+    color: #222;
+}
+
+/* makes the sidebar and content sit side by side */
+.layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* sidebar - used on every logged in page */
+
+/* dark red sidebar on the left */
+.sidebar {
+    position: relative;
+    width: 270px;
+    background: linear-gradient(180deg, #6b1f2b 0%, #5d1823 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 24px 18px;
+    border-right: 1px solid rgba(255,255,255,0.14);
+    box-shadow: 6px 0 24px rgba(0,0,0,0.08);
+}
+
+/* thin decorative line on the right edge */
+.sidebar::after {
+    content: "";
+    position: absolute;
+    top: 18px;
+    right: 0;
+    width: 1px;
+    height: calc(100% - 36px);
+    background: rgba(255,255,255,0.08);
+}
+
+/* profile card at the top of the sidebar */
+.profile {
+    text-align: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 22px 16px;
+    margin-bottom: 22px;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.profile:hover {
+    background: rgba(255,255,255,0.12);
+    transform: translateY(-2px);
+}
+
+/* shows a pointer cursor when hovering */
+.clickable {
+    cursor: pointer;
+}
+
+/* circular avatar icon */
+.profile .avatar {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.14);
+}
+
+.profile .username {
+    margin-top: 8px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+}
+
+/* box around the navigation links */
+.menu-section {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    padding: 16px 12px;
+}
+
+.menu-section h3 {
+    margin: 0 0 12px 6px;
+    color: rgba(255,255,255,0.78);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+}
+
+/* each navigation link */
+.menu-section a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    padding: 12px 14px;
+    margin: 4px 0;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.22s ease;
+}
+
+/* small dot before each link */
+.menu-section a::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.35);
+    flex-shrink: 0;
+}
+
+.menu-section a:hover {
+    background: rgba(255,255,255,0.13);
+}
+
+/* highlights the current page link */
+.menu-section a.active-link {
+    background: rgba(255,255,255,0.16);
+    color: white;
+}
+
+/* makes the dot white on the active link */
+.menu-section a.active-link::before {
+    background: white;
+}
+
+/* help and logout links at the bottom */
+.sidebar-bottom {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-bottom a {
+    display: flex;
+    align-items: center;
+    color: white;
+    text-decoration: none;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.22s ease;
+}
+
+.sidebar-bottom a:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+/* logout link styled to stand out */
+.logout {
+    color: #ffdddd;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    text-align: center;
+    font-weight: 600;
+}
+
+.logout:hover {
+    background: rgba(255,255,255,0.16);
+}
+
+
+/* main content area - used on every logged in page */
+
+/* the area to the right of the sidebar */
+.content {
+    flex: 1;
+    padding: 50px 60px !important;
+}
+
+/* red title and grey subtitle */
+.page-header h1,
+.dashboard-header h1 {
+    color: #6b1f2b;
+}
+
+.page-header p,
+.dashboard-header p {
+    color: #666;
+}
+
+.dashboard-section {
+    margin-top: 30px;
+}
+
+/* grid of cards that adjusts columns based on screen width */
+.questionnaire-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.empty {
+    color: #777;
+}
+
+/* white header card at the top of the page */
+.dashboard-header {
+    margin-bottom: 40px;
+    background: white;
+    padding: 25px 30px;
+    border-radius: 16px;
+    border: 2px solid #6b1f2b;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+}
+
+.dashboard-header h1 {
+    margin: 0 0 5px 0;
+}
+
+.dashboard-header p {
+    margin: 5px 0 0;
+}
+
+
+/* questionnaire cards - used on the admin dashboard */
+
+.questionnaire-row {
+    background: white;
+    padding: 18px;
+    border-radius: 14px;
+    border: 2px solid #6b1f2b !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+}
+
+.questionnaire-row:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+
+.questionnaire-row strong {
+    font-size: 17px;
+    color: #6b1f2b;
+}
+
+.questionnaire-row p {
+    margin: 4px 0;
+    font-size: 13px;
+    color: #777;
+}
+
+
+/* admin tables - used on manage users, questionnaires and responses pages */
+
+/* white card that wraps the table */
+.admin-table-wrap {
+    background: white;
+    border: 2px solid #6b1f2b;
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    overflow-x: auto;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 16px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+
+/* light pink header row */
+.admin-table th {
+    color: #6b1f2b;
+    background: #faf7f8;
+}
+
+
+/* inputs - used on every page with a form */
+
+input,
+select,
+textarea {
+    width: 100%;
+    background: #fff;
+    border: 1px solid #d7dbe0;
+    border-radius: 10px !important;
+    padding: 12px 14px;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* red glow when the input is selected */
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #6b1f2b;
+    box-shadow: 0 0 0 4px rgba(107,31,43,0.12);
+    outline: none;
+}
+
+
+/* buttons - used across all pages */
+
+button {
+    border-radius: 10px !important;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* dark red button for main actions */
+.primary-btn {
+    background: linear-gradient(135deg, #6b1f2b, #8b2a3b);
+    color: white;
+    padding: 12px 16px;
+    transition: 0.2s ease;
+}
+
+.primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 18px rgba(107,31,43,0.18);
+}
+
+/* grey button for less important actions */
+.secondary-btn {
+    background: #f3f4f6;
+    color: #222;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    transition: 0.2s ease;
+}
+
+.secondary-btn:hover {
+    background: #e9ebef;
+}
+
+/* solid red button for logout */
+.logout-btn {
+    background: #6b1f2b;
+    color: white;
+    padding: 12px 16px;
+    transition: 0.2s ease;
+}
+
+.logout-btn:hover {
+    background: #5b1823;
+}
+
+/* light red button for delete actions */
+.danger-btn {
+    background: #fff1f3;
+    color: #a61b37;
+    border: 1px solid rgba(166,27,55,0.18);
+    padding: 12px 16px;
+    transition: 0.2s ease;
+}
+
+.danger-btn:hover {
+    background: #ffe4e8;
+}
+
+/* smaller delete button used inside tables */
+.danger-small {
+    background: #fff1f3;
+    color: #a61b37;
+    border: 1px solid rgba(166,27,55,0.18);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.danger-small:hover {
+    background: #ffe4e8;
+}
+
+/* makes a button stretch to fill its container */
+.full-width {
+    width: 100%;
+}
+
+
+/* auth pages - login, signup, forgot password, reset password */
+
+/* centres the card on the page */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f4f4f6;
+}
+
+/* white card containing the form */
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+}
+
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #6b1f2b;
+}
+
+.auth-card input {
+    margin-bottom: 15px;
+}
+
+.auth-card input:focus {
+    border-color: #6b1f2b;
+    box-shadow: 0 0 0 3px rgba(107,31,43,0.15);
+    outline: none;
+}
+
+/* submit button */
+.auth-card button {
+    background: linear-gradient(135deg, #6b1f2b, #8b2a3b);
+    color: white;
+    padding: 12px;
+    transition: 0.2s;
+}
+
+.auth-card button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(107,31,43,0.2);
+}
+
+/* sign up or log in link below the form */
+.auth-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.auth-link a {
+    color: #6b1f2b;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-link a:hover {
+    text-decoration: underline;
+}
+
+
+/* profile page */
+
+.page-shell {
+    width: 100%;
+}
+
+.profile-header {
+    margin-bottom: 28px;
+}
+
+/* two column layout with main card on the left and quick actions on the right */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+/* white bordered card */
+.profile-card {
+    background: white;
+    border-radius: 16px;
+    border: 2px solid #6b1f2b;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    padding: 28px;
+}
+
+.profile-main-card {
+    min-height: 100%;
+}
+
+/* quick actions card stays fixed as you scroll */
+.profile-side-card {
+    position: sticky;
+    top: 30px;
+}
+
+.profile-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.profile-card-header.small-gap {
+    margin-bottom: 18px;
+}
+
+.profile-card-header h2 {
+    margin: 0 0 6px;
+    color: #6b1f2b;
+    font-size: 22px;
+}
+
+.profile-card-header p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* pill badge showing account type */
+.profile-badge {
+    background: rgba(107,31,43,0.08);
+    color: #6b1f2b;
+    border: 1px solid rgba(107,31,43,0.18);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* grid of stat cards */
+.profile-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.profile-stat-card {
+    background: #faf7f8;
+    border: 1px solid rgba(107,31,43,0.12);
+    border-radius: 14px;
+    padding: 18px;
+}
+
+.profile-stat-card .stat-label {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.profile-stat-card strong {
+    font-size: 28px;
+    color: #6b1f2b;
+}
+
+/* label and input stacked together */
+.profile-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.profile-form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b1f2b;
+}
+
+/* thin line separating sections */
+.profile-divider {
+    border-top: 1px solid #ececec;
+    margin: 26px 0;
+}
+
+/* heading and button side by side */
+.profile-section-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+
+.profile-section-copy h3 {
+    margin: 0 0 6px;
+    color: #6b1f2b;
+    font-size: 18px;
+}
+
+.profile-section-copy p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+}
+
+/* box that wraps the password change fields */
+.password-form-wrap {
+    background: #faf7f8;
+    border: 1px solid rgba(107,31,43,0.12);
+    border-radius: 14px;
+    padding: 18px;
+    margin-top: 14px;
+}
+
+/* stacks the action buttons vertically */
+.profile-actions-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+
+/* public pages - take questionnaire, thank you, share */
+
+/* centred card for pages that dont need a login */
+.public-container {
+    max-width: 650px;
+    margin: 60px auto;
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    border: 2px solid #6b1f2b;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+}
+
+/* wider version used on the take questionnaire page */
+.public-wide {
+    max-width: 800px;
+}
+
+.public-title {
+    color: #6b1f2b;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.public-text {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+/* removes underline from the return button link */
+.link-reset {
+    text-decoration: none;
+}
+
+.share-link input {
+    margin-bottom: 20px;
+}
+
+/* centres the qr code */
+.qr-code {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.qr-code img {
+    max-width: 220px;
+    width: 100%;
+    height: auto;
+}
+
+/* stacks questions with spacing between them */
+.take-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.take-question {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.take-label {
+    color: #6b1f2b;
+    font-weight: 600;
+}
+
+
+/* responses page */
+
+/* white card wrapping the table */
+.responses-container {
+    background: white;
+    border: 2px solid #6b1f2b;
+    border-radius: 16px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+    padding: 24px;
+}
+
+/* title and back button side by side */
+.responses-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.responses-title {
+    margin: 0;
+    color: #6b1f2b;
+}
+
+.responses-back-btn {
+    background: #6b1f2b;
+    color: white;
+    padding: 10px 16px;
+}
+
+/* table of submitted responses */
+.responses-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.responses-table th,
+.responses-table td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+}
+
+/* light pink header row */
+.responses-table th {
+    background: #faf7f8;
+    color: #6b1f2b;
+}
+
+.responses-muted {
+    color: #777;
+}
+
+
+/* responsive - adjusts layout on smaller screens */
+
+/* stack profile into one column on medium screens */
+@media (max-width: 980px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* stop the side card from being sticky when stacked */
+    .profile-side-card {
+        position: static;
+    }
+}
+
+/* stack sidebar above content on small screens */
+@media (max-width: 768px) {
+    .layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 2px solid rgba(255,255,255,0.15);
+    }
+
+    .sidebar::after {
+        display: none;
+    }
+
+    .content {
+        padding: 24px !important;
+    }
+
+    .profile-card {
+        padding: 20px;
+    }
+
+    /* stack header rows vertically on small screens */
+    .profile-card-header,
+    .profile-section-row,
+    .responses-top-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-badge {
+        white-space: normal;
+    }
+
+    .public-container {
+        margin: 24px;
+        padding: 22px;
+    }
+}
