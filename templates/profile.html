@@ -4,6 +4,14 @@
 <title>Profile</title>
 <link rel="stylesheet" href="/static/style.css">
 <style>
+#deleteAccountBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #ddd;
+    color: #999;
+    border-color: #ddd;
+}
 /* utility class used to hide the password form until the user clicks change password */
 .hidden { display: none; }
 </style>
@@ -103,7 +111,7 @@
 <!-- deletes the account and asks for confirmation first -->
 <form action="/delete-account" method="POST"
 onsubmit="return confirm('This will permanently delete your account and all data. Are you sure?');">
-<button type="submit" class="danger-btn full-width">Delete Account</button>
+<button type="submit" class="danger-btn full-width" id="deleteAccountBtn">Delete Account</button>
 </form>
 </div>
 </div>
@@ -124,6 +132,12 @@ document.getElementById("adminSidebarLink").style.display = "block";
 document.getElementById("adminProfileButton").style.display = "block";
 document.getElementById("accountBadge").innerText = "SaySo Admin";
       }
+if (data.is_last_admin) {
+    const btn = document.getElementById("deleteAccountBtn");
+    btn.disabled = btn.title = "You cannot delete your account while you are the only admin.";
+    btn.style.opcaity = "0.5";
+    btn.style.currsor = "not-allowed";
+}
   });
 // fetch the users questionnaires and show the count in the stat card
 fetch("/api/my-questionnaires")

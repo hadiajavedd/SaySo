@@ -369,10 +369,6 @@ def delete_account():
         return redirect("/")
 
     user = User.query.get(session["user_id"])
-    if not user:
-        session.clear()
-        return redirect("/")
-
     if is_last_admin(user):
         return redirect("/profile")
 
@@ -695,7 +691,8 @@ def api_me():
     user = User.query.get(session["user_id"])
     return jsonify({
         "username": user.username if user else session.get("username", ""),
-        "is_admin": user.is_admin if user else False
+        "is_admin": user.is_admin if user else False,
+        "is_last_admin": is_last_admin(user) if user else False
     })
 
 
