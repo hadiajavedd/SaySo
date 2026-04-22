@@ -15,12 +15,12 @@ HTML, CSS, JavaScript
 qrcode - Pillow
 
 Demo Account:
-For quick access, you can use the following demo account:
+For quick access, you can use the following demo account which already has admin privileges:
 
-Username: 
-Password: 
+Username: testuser
+Password: testuser
 
-Alternatively, you can create your own account using the signup page.
+Alternatively, you can create your own account using the signup page but it will be a regular business owner account.
 
 Important Notes:
 - This is a demonstration system developed for academic purposes.
